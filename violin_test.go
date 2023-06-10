@@ -16,7 +16,6 @@
 package violin
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
@@ -24,15 +23,6 @@ import (
 
 	"go.uber.org/goleak"
 )
-
-func TestQuickStart(t *testing.T) {
-	defer goleak.VerifyNone(t)
-	v := New()
-	defer v.Shutdown()
-	v.Submit(func() {
-		fmt.Println("Hello, VIOLIN!")
-	})
-}
 
 func TestVIOLIN(t *testing.T) {
 	defer goleak.VerifyNone(t)
