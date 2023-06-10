@@ -68,13 +68,9 @@ func (v *Violin) shutdown(wait bool) {
 				panic(cleaningFailed)
 			}
 			v.clean()
-			<-v.shutdownChan
-			close(v.waitingChan)
-			close(v.workerChan)
+			v.waitClose()
 		} else {
-			close(v.waitingChan)
-			<-v.shutdownChan
-			close(v.workerChan)
+			v.waitClose()
 			if !atomic.CompareAndSwapUint32(&v.status, statusPlaying, statusShutdown) {
 				panic(shutdownFailed)
 			}
@@ -183,4 +179,10 @@ func (v *Violin) dismissAll() {
 		v.dismiss()
 	}
 	close(v.dismissChan)
+}
+
+func (v *Violin) waitClose() {
+	<-v.shutdownChan
+	close(v.waitingChan)
+	close(v.workerChan)
 }
