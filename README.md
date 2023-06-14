@@ -1,5 +1,7 @@
 # VIOLIN
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/B1NARY-GR0UP/violin)](https://goreportcard.com/report/github.com/B1NARY-GR0UP/violin)
+
 > Please ... listen.
 
 ![VIOLIN](images/VIOLIN.png)
