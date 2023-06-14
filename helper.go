@@ -122,7 +122,7 @@ LOOP:
 				}
 			case <-timer.C:
 				if v.WorkerNum() > 0 {
-					v.dismiss()
+					v.tryDismiss()
 				}
 				timer.Reset(v.options.workerIdleTimeout)
 			}
@@ -167,7 +167,7 @@ LOOP:
 	}
 }
 
-func (v *Violin) dismiss() {
+func (v *Violin) tryDismiss() {
 	select {
 	case v.dismissChan <- struct{}{}:
 	default:
@@ -176,7 +176,7 @@ func (v *Violin) dismiss() {
 
 func (v *Violin) dismissAll() {
 	for v.WorkerNum() > 0 {
-		v.dismiss()
+		v.tryDismiss()
 	}
 	close(v.dismissChan)
 }
