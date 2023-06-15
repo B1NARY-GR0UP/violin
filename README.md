@@ -42,6 +42,10 @@ func main() {
 | `WithWaitingQueueSize`  | `64`              | Set the size of the waiting queue         |
 | `WithWorkerIdleTimeout` | `time.Second * 3` | Set the destroyed timeout of idle workers |
 
+## Blogs
+
+- [GO: How to Write a Worker Pool](https://dev.to/justlorain/go-how-to-write-a-worker-pool-1h3b) | [中文](https://juejin.cn/post/7244733519948333111)
+
 ## License
 
 VIOLIN is distributed under the [Apache License 2.0](./LICENSE). The licenses of third party dependencies of VIOLIN are explained [here](./licenses).
