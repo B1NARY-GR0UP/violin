@@ -75,7 +75,7 @@ func TestMaxWorkers(t *testing.T) {
 	}
 
 	// Wait for all queued tasks to be dispatched to workers.
-	assert.Equal(t, len(v.waitingChan), int(v.WaitingTaskNum()))
+	assert.Equal(t, len(v.waitingC), int(v.WaitingTaskNum()))
 
 	timeout := time.After(5 * time.Second)
 	for startCount := 0; startCount < max; {

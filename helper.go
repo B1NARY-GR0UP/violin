@@ -28,13 +28,13 @@ func (v *Violin) submit(wait bool, task func()) {
 	}
 	if wait {
 		ctx, done := context.WithCancel(context.Background())
-		v.taskChan <- func() {
+		v.taskC <- func() {
 			task()
 			done()
 		}
 		<-ctx.Done()
 	} else {
-		v.taskChan <- task
+		v.taskC <- task
 	}
 	_ = atomic.AddUint32(&v.taskNum, 1)
 }
@@ -52,7 +52,7 @@ func (v *Violin) pause(ctx context.Context) {
 			wg.Done()
 			select {
 			case <-ctx.Done():
-			case <-v.pauseChan:
+			case <-v.pauseC:
 			}
 		})
 	}
@@ -61,33 +61,27 @@ func (v *Violin) pause(ctx context.Context) {
 
 func (v *Violin) shutdown(wait bool) {
 	v.once.Do(func() {
-		close(v.taskChan)
-		close(v.pauseChan)
+		close(v.taskC)
+		close(v.pauseC)
 		if wait {
-			if !atomic.CompareAndSwapUint32(&v.status, statusPlaying, statusCleaning) {
-				panic(cleaningFailed)
-			}
+			_ = atomic.CompareAndSwapUint32(&v.status, statusPlaying, statusCleaning)
 			v.clean()
 			v.waitClose()
 		} else {
 			v.waitClose()
-			if !atomic.CompareAndSwapUint32(&v.status, statusPlaying, statusShutdown) {
-				panic(shutdownFailed)
-			}
+			_ = atomic.CompareAndSwapUint32(&v.status, statusPlaying, statusShutdown)
 		}
 	})
 }
 
 func (v *Violin) play() {
 	defer func() {
-		close(v.shutdownChan)
+		close(v.shutdownC)
 		if v.IsCleaning() {
 			_ = atomic.CompareAndSwapUint32(&v.status, statusCleaning, statusShutdown)
 		}
 	}()
-	if !atomic.CompareAndSwapUint32(&v.status, statusInitialized, statusPlaying) {
-		panic(playingFailed)
-	}
+	_ = atomic.CompareAndSwapUint32(&v.status, statusInitialized, statusPlaying)
 	wg := new(sync.WaitGroup)
 	timer := time.NewTimer(v.options.workerIdleTimeout)
 	defer timer.Stop()
@@ -98,26 +92,26 @@ LOOP:
 			go v.recruit(wg)
 		}
 		select {
-		case task, ok := <-v.waitingChan:
+		case task, ok := <-v.waitingC:
 			if !ok {
 				break LOOP
 			}
 			select {
-			case v.workerChan <- task:
+			case v.workerC <- task:
 				_ = atomic.AddUint32(&v.waitingTaskNum, ^uint32(0))
 			default:
-				v.waitingChan <- task
+				v.waitingC <- task
 			}
 		default:
 			select {
-			case task, ok := <-v.taskChan:
+			case task, ok := <-v.taskC:
 				if !ok {
 					break LOOP
 				}
 				select {
-				case v.workerChan <- task:
+				case v.workerC <- task:
 				default:
-					v.waitingChan <- task
+					v.waitingC <- task
 					_ = atomic.AddUint32(&v.waitingTaskNum, 1)
 				}
 			case <-timer.C:
@@ -134,12 +128,12 @@ LOOP:
 
 func (v *Violin) clean() {
 	for v.WaitingTaskNum() > 0 {
-		task, ok := <-v.waitingChan
+		task, ok := <-v.waitingC
 		if !ok {
 			break
 		}
 		_ = atomic.AddUint32(&v.waitingTaskNum, ^uint32(0))
-		v.workerChan <- task
+		v.workerC <- task
 	}
 }
 
@@ -155,9 +149,9 @@ LOOP:
 			break
 		}
 		select {
-		case <-v.dismissChan:
+		case <-v.dismissC:
 			break LOOP
-		case task, ok := <-v.workerChan:
+		case task, ok := <-v.workerC:
 			if !ok {
 				break LOOP
 			}
@@ -169,7 +163,7 @@ LOOP:
 
 func (v *Violin) tryDismiss() {
 	select {
-	case v.dismissChan <- struct{}{}:
+	case v.dismissC <- struct{}{}:
 	default:
 	}
 }
@@ -178,11 +172,11 @@ func (v *Violin) dismissAll() {
 	for v.WorkerNum() > 0 {
 		v.tryDismiss()
 	}
-	close(v.dismissChan)
+	close(v.dismissC)
 }
 
 func (v *Violin) waitClose() {
-	<-v.shutdownChan
-	close(v.waitingChan)
-	close(v.workerChan)
+	<-v.shutdownC
+	close(v.waitingC)
+	close(v.workerC)
 }

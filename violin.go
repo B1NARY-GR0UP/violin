@@ -21,6 +21,7 @@ import (
 	"sync/atomic"
 )
 
+// Violin VIOLIN worker pool
 type Violin struct {
 	options *options
 
@@ -32,12 +33,12 @@ type Violin struct {
 	waitingTaskNum uint32
 	status         uint32
 
-	workerChan   chan func()
-	taskChan     chan func()
-	waitingChan  chan func()
-	dismissChan  chan struct{}
-	pauseChan    chan struct{}
-	shutdownChan chan struct{}
+	workerC   chan func()
+	taskC     chan func()
+	waitingC  chan func()
+	dismissC  chan struct{}
+	pauseC    chan struct{}
+	shutdownC chan struct{}
 }
 
 const (
@@ -48,28 +49,19 @@ const (
 	statusShutdown
 )
 
-const (
-	initializedFailed = "violin initialize failed"
-	playingFailed     = "violin playing failed"
-	cleaningFailed    = "violin cleaning failed"
-	shutdownFailed    = "violin shutdown failed"
-)
-
 // New VIOLIN worker pool
 func New(opts ...Option) *Violin {
 	options := newOptions(opts...)
 	v := &Violin{
-		options:      options,
-		workerChan:   make(chan func()),
-		taskChan:     make(chan func()),
-		waitingChan:  make(chan func(), options.waitingQueueSize),
-		dismissChan:  make(chan struct{}),
-		pauseChan:    make(chan struct{}),
-		shutdownChan: make(chan struct{}),
+		options:   options,
+		workerC:   make(chan func()),
+		taskC:     make(chan func()),
+		waitingC:  make(chan func(), options.waitingQueueSize),
+		dismissC:  make(chan struct{}),
+		pauseC:    make(chan struct{}),
+		shutdownC: make(chan struct{}),
 	}
-	if !atomic.CompareAndSwapUint32(&v.status, 0, statusInitialized) {
-		panic(initializedFailed)
-	}
+	_ = atomic.CompareAndSwapUint32(&v.status, 0, statusInitialized)
 	go v.play()
 	return v
 }
