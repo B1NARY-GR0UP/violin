@@ -55,7 +55,7 @@ func TestPool_Get_Impl(t *testing.T) {
 	conn, err := p.Get()
 	assert.Nil(t, err)
 
-	_, ok := conn.(*CConn)
+	_, ok := conn.(*Conn)
 	assert.True(t, ok)
 }
 
@@ -129,7 +129,7 @@ func TestPool_PutUnusableConn(t *testing.T) {
 	assert.Equal(t, poolSize, p.Size())
 
 	conn, _ = p.Get()
-	if pc, ok := conn.(*CConn); !ok {
+	if pc, ok := conn.(*Conn); !ok {
 		t.Errorf("impossible")
 	} else {
 		pc.MarkUnusable()

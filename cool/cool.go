@@ -81,7 +81,7 @@ func (c *cool) Get() (net.Conn, error) {
 		if !ok {
 			return nil, ErrClosed
 		}
-		if timeout := c.options.connIdleTimeout; timeout > 0 && time.Now().After(conn.(*CConn).t.Add(timeout)) {
+		if timeout := c.options.connIdleTimeout; timeout > 0 && time.Now().After(conn.(*Conn).t.Add(timeout)) {
 			return c.produceWrap(producer)
 		}
 		return conn, nil
@@ -128,7 +128,7 @@ func (c *cool) put(conn net.Conn) error {
 }
 
 func (c *cool) wrap(conn net.Conn) net.Conn {
-	return &CConn{
+	return &Conn{
 		Conn: conn,
 		c:    c,
 		t:    time.Now(),

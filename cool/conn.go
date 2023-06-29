@@ -21,9 +21,9 @@ import (
 	"time"
 )
 
-var _ net.Conn = (*CConn)(nil)
+var _ net.Conn = (*Conn)(nil)
 
-type CConn struct {
+type Conn struct {
 	net.Conn
 	sync.RWMutex
 	unusable bool
@@ -33,7 +33,7 @@ type CConn struct {
 
 // Close overrides the net.Conn Close method
 // put the connection back to the pool instead of closing it
-func (cc *CConn) Close() error {
+func (cc *Conn) Close() error {
 	cc.RLock()
 	defer cc.RUnlock()
 	if cc.unusable {
@@ -45,13 +45,13 @@ func (cc *CConn) Close() error {
 	return cc.c.put(cc.Conn)
 }
 
-func (cc *CConn) MarkUnusable() {
+func (cc *Conn) MarkUnusable() {
 	cc.Lock()
 	defer cc.Unlock()
 	cc.unusable = true
 }
 
-func (cc *CConn) IsUnusable() bool {
+func (cc *Conn) IsUnusable() bool {
 	cc.RLock()
 	defer cc.RUnlock()
 	return cc.unusable
