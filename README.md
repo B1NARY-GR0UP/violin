@@ -6,7 +6,7 @@
 
 ![VIOLIN](images/VIOLIN.png)
 
-VIOLIN worker pool, rich APIs and configuration options are provided, inspired by [gammazero/workerpool](https://github.com/gammazero/workerpool).
+VIOLIN worker pool / connection pool, rich APIs and configuration options are provided, inspired by [gammazero/workerpool](https://github.com/gammazero/workerpool) / [fatih/pool](https://github.com/fatih/pool).
 
 ## Install
 
@@ -15,6 +15,8 @@ go get github.com/B1NARY-GR0UP/violin
 ```
 
 ## Quick Start
+
+### Worker Pool
 
 ```go
 package main
@@ -34,13 +36,51 @@ func main() {
 }
 ```
 
+### Connection Pool
+
+```go
+package main
+
+import (
+	"net"
+	"time"
+
+	"github.com/B1NARY-GR0UP/violin/cool"
+)
+
+func main() {
+	producer := func() (net.Conn, error) {
+		return net.Dial("your-network", "your-address")
+	}
+	c, _ := cool.New(5, 30, producer, cool.WithConnIdleTimeout(30*time.Second))
+	defer c.Close()
+	_ = c.Size()
+	conn, _ := c.Get()
+	_ = conn.Close()
+	if cc, ok := conn.(*cool.CConn); ok {
+		cc.MarkUnusable()
+		if cc.IsUnusable() {
+			_ = cc.Close()
+		}
+	}
+}
+```
+
 ## Configuration
+
+### Worker Pool
 
 | Option                  | Default           | Description                               |
 |-------------------------|-------------------|-------------------------------------------|
 | `WithMaxWorkers`        | `5`               | Set the maximum number of workers         |
 | `WithWaitingQueueSize`  | `64`              | Set the size of the waiting queue         |
-| `WithWorkerIdleTimeout` | `time.Second * 3` | Set the destroyed timeout of idle workers |
+| `WithWorkerIdleTimeout` | `3 * time.Second` | Set the destroyed timeout of idle workers |
+
+### Connection Pool
+
+| Option                | Default | Description                     |
+|-----------------------|---------|---------------------------------|
+| `WithConnIdleTimeout` | `0`     | Set the connection idle timeout |
 
 ## Blogs
 

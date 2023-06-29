@@ -28,7 +28,7 @@ type options struct {
 var defaultOptions = options{
 	maxWorkers:        5,
 	waitingQueueSize:  64,
-	workerIdleTimeout: time.Second * 3,
+	workerIdleTimeout: 3 * time.Second,
 }
 
 func newOptions(opts ...Option) *options {
