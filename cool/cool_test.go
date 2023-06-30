@@ -67,7 +67,7 @@ func TestPool_Get(t *testing.T) {
 	assert.Nil(t, err)
 
 	// after one get, current capacity should be lowered by one.
-	assert.Equal(t, InitialCap-1, p.Size())
+	assert.Equal(t, InitialCap-1, p.Len())
 
 	// get them all
 	var wg sync.WaitGroup
@@ -81,7 +81,7 @@ func TestPool_Get(t *testing.T) {
 	}
 	wg.Wait()
 
-	assert.Equal(t, 0, p.Size())
+	assert.Equal(t, 0, p.Len())
 
 	_, err = p.Get()
 	assert.Nil(t, err)
@@ -104,15 +104,15 @@ func TestPool_Put(t *testing.T) {
 		_ = conn.Close()
 	}
 
-	if p.Size() != MaximumCap {
-		t.Errorf("Put error len. Expecting %d, got %d", 1, p.Size())
+	if p.Len() != MaximumCap {
+		t.Errorf("Put error len. Expecting %d, got %d", 1, p.Len())
 	}
 
 	conn, _ := p.Get()
 	p.Close() // close pool
 
 	_ = conn.Close() // try to put into a full pool
-	assert.Equal(t, 0, p.Size())
+	assert.Equal(t, 0, p.Len())
 }
 
 func TestPool_PutUnusableConn(t *testing.T) {
@@ -123,10 +123,10 @@ func TestPool_PutUnusableConn(t *testing.T) {
 	conn, _ := p.Get()
 	_ = conn.Close()
 
-	poolSize := p.Size()
+	poolSize := p.Len()
 	conn, _ = p.Get()
 	_ = conn.Close()
-	assert.Equal(t, poolSize, p.Size())
+	assert.Equal(t, poolSize, p.Len())
 
 	conn, _ = p.Get()
 	if pc, ok := conn.(*Conn); !ok {
@@ -135,13 +135,13 @@ func TestPool_PutUnusableConn(t *testing.T) {
 		pc.MarkUnusable()
 	}
 	_ = conn.Close()
-	assert.Equal(t, poolSize-1, p.Size())
+	assert.Equal(t, poolSize-1, p.Len())
 }
 
 func TestPool_UsedCapacity(t *testing.T) {
 	p, _ := newCool()
 	defer p.Close()
-	assert.Equal(t, InitialCap, p.Size())
+	assert.Equal(t, InitialCap, p.Len())
 }
 
 func TestPool_Close(t *testing.T) {
@@ -157,7 +157,7 @@ func TestPool_Close(t *testing.T) {
 
 	_, err := p.Get()
 	assert.NotNil(t, err)
-	assert.Equal(t, 0, p.Size())
+	assert.Equal(t, 0, p.Len())
 }
 
 func TestPoolConcurrent(t *testing.T) {

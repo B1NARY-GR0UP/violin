@@ -32,7 +32,7 @@ type Conn struct {
 }
 
 // Close overrides the net.Conn Close method
-// put the connection back to the pool instead of closing it
+// put the usable connection back to the pool instead of closing it
 func (cc *Conn) Close() error {
 	cc.RLock()
 	defer cc.RUnlock()

@@ -35,7 +35,7 @@ var (
 type Cool interface {
 	Get() (net.Conn, error)
 	Close()
-	Size() int
+	Len() int
 }
 
 type Producer func() (net.Conn, error)
@@ -103,7 +103,7 @@ func (c *cool) Close() {
 	})
 }
 
-func (c *cool) Size() int {
+func (c *cool) Len() int {
 	c.RLock()
 	defer c.RUnlock()
 	return len(c.connC)

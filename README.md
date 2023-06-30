@@ -54,10 +54,10 @@ func main() {
 	}
 	c, _ := cool.New(5, 30, producer, cool.WithConnIdleTimeout(30*time.Second))
 	defer c.Close()
-	_ = c.Size()
+	_ = c.Len()
 	conn, _ := c.Get()
 	_ = conn.Close()
-	if cc, ok := conn.(*cool.CConn); ok {
+	if cc, ok := conn.(*cool.Conn); ok {
 		cc.MarkUnusable()
 		if cc.IsUnusable() {
 			_ = cc.Close()
