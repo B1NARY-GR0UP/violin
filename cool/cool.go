@@ -41,8 +41,8 @@ type Cool interface {
 type Producer func() (net.Conn, error)
 
 type cool struct {
-	sync.Once
-	sync.RWMutex
+	once     sync.Once
+	mu       sync.RWMutex
 	options  *options
 	connC    chan net.Conn
 	producer Producer
@@ -69,10 +69,10 @@ func New(init, max int, producer Producer, opts ...Option) (Cool, error) {
 }
 
 func (c *cool) Get() (net.Conn, error) {
-	c.RLock()
+	c.mu.RLock()
 	connC := c.connC
 	producer := c.producer
-	c.RUnlock()
+	c.mu.RUnlock()
 	if connC == nil {
 		return nil, ErrClosed
 	}
@@ -91,7 +91,7 @@ func (c *cool) Get() (net.Conn, error) {
 }
 
 func (c *cool) Close() {
-	c.Do(func() {
+	c.once.Do(func() {
 		connC := c.connC
 		c.options = nil
 		c.connC = nil
@@ -104,8 +104,8 @@ func (c *cool) Close() {
 }
 
 func (c *cool) Len() int {
-	c.RLock()
-	defer c.RUnlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return len(c.connC)
 }
 
@@ -113,8 +113,8 @@ func (c *cool) put(conn net.Conn) error {
 	if conn == nil {
 		return ErrNilConn
 	}
-	c.RLock()
-	defer c.RUnlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	if c.connC == nil {
 		// cool is closed
 		return conn.Close()

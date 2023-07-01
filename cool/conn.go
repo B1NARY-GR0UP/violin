@@ -25,7 +25,7 @@ var _ net.Conn = (*Conn)(nil)
 
 type Conn struct {
 	net.Conn
-	sync.RWMutex
+	mu       sync.RWMutex
 	unusable bool
 	c        *cool
 	t        time.Time
@@ -34,8 +34,8 @@ type Conn struct {
 // Close overrides the net.Conn Close method
 // put the usable connection back to the pool instead of closing it
 func (cc *Conn) Close() error {
-	cc.RLock()
-	defer cc.RUnlock()
+	cc.mu.RLock()
+	defer cc.mu.RUnlock()
 	if cc.unusable {
 		if cc.Conn != nil {
 			return cc.Conn.Close()
@@ -46,13 +46,13 @@ func (cc *Conn) Close() error {
 }
 
 func (cc *Conn) MarkUnusable() {
-	cc.Lock()
-	defer cc.Unlock()
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
 	cc.unusable = true
 }
 
 func (cc *Conn) IsUnusable() bool {
-	cc.RLock()
-	defer cc.RUnlock()
+	cc.mu.RLock()
+	defer cc.mu.RUnlock()
 	return cc.unusable
 }
