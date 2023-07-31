@@ -18,5 +18,5 @@ package violin
 // BINARY-VIOLIN
 const (
 	Name    = "VIOLIN"
-	Version = "v0.2.0"
+	Version = "v0.2.1"
 )
