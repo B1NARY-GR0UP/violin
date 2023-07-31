@@ -32,12 +32,12 @@ func (v *Violin) submit(wait bool, task func()) {
 			task()
 			done()
 		}
+		_ = atomic.AddUint32(&v.taskNum, 1)
 		<-ctx.Done()
 	} else {
 		v.taskC <- task
+		_ = atomic.AddUint32(&v.taskNum, 1)
 	}
-	// TODO: fix
-	_ = atomic.AddUint32(&v.taskNum, 1)
 }
 
 func (v *Violin) consume(wait bool, taskC chan func()) {
