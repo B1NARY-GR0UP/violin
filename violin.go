@@ -76,12 +76,14 @@ func (v *Violin) SubmitWait(task func()) {
 	v.submit(true, task)
 }
 
-// Consume tasks from the channel
+// Consume the current tasks in the taskC
+// Note: Consume will not execute the tasks which put into the taskC after calling Consume
 func (v *Violin) Consume(taskC chan func()) {
 	v.consume(false, taskC)
 }
 
-// ConsumeWait consume tasks from the channel and wait for them to complete
+// ConsumeWait consume tasks in the taskC and wait for them to complete
+// Note: ConsumeWait will not execute the tasks which put into the taskC after calling ConsumeWait
 func (v *Violin) ConsumeWait(taskC chan func()) {
 	v.consume(true, taskC)
 }
