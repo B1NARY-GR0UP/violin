@@ -71,9 +71,19 @@ func (v *Violin) Submit(task func()) {
 	v.submit(false, task)
 }
 
-// SubmitWait a task to the worker pool and wait for it to complete
+// SubmitWait submit a task to the worker pool and wait for it to complete
 func (v *Violin) SubmitWait(task func()) {
 	v.submit(true, task)
+}
+
+// Consume tasks from the channel
+func (v *Violin) Consume(taskC chan func()) {
+	v.consume(false, taskC)
+}
+
+// ConsumeWait consume tasks from the channel and wait for them to complete
+func (v *Violin) ConsumeWait(taskC chan func()) {
+	v.consume(true, taskC)
 }
 
 // Pause the worker pool

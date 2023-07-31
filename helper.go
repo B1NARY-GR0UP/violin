@@ -36,7 +36,34 @@ func (v *Violin) submit(wait bool, task func()) {
 	} else {
 		v.taskC <- task
 	}
+	// TODO: fix
 	_ = atomic.AddUint32(&v.taskNum, 1)
+}
+
+func (v *Violin) consume(wait bool, taskC chan func()) {
+	if taskC == nil {
+		return
+	}
+	nums := len(taskC)
+	if wait {
+		wg := new(sync.WaitGroup)
+		wg.Add(nums)
+		for i := 0; i < nums; i++ {
+			task := <-taskC
+			v.taskC <- func() {
+				task()
+				wg.Done()
+			}
+			_ = atomic.AddUint32(&v.taskNum, 1)
+		}
+		wg.Wait()
+	} else {
+		for i := 0; i < nums; i++ {
+			task := <-taskC
+			v.taskC <- task
+			_ = atomic.AddUint32(&v.taskNum, 1)
+		}
+	}
 }
 
 func (v *Violin) pause(ctx context.Context) {
