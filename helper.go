@@ -118,18 +118,15 @@ LOOP:
 			_ = atomic.AddUint32(&v.workerNum, 1)
 			go v.recruit(wg)
 		}
-		select {
-		case task, ok := <-v.waitingC:
-			if !ok {
-				break LOOP
-			}
+		// consume the waiting queue first
+		if v.WaitingTaskNum() > 0 {
+			task := v.waitingQ.DelFirst()
 			select {
 			case v.workerC <- task:
-				_ = atomic.AddUint32(&v.waitingTaskNum, ^uint32(0))
 			default:
-				v.waitingC <- task
+				v.waitingQ.AddLast(task)
 			}
-		default:
+		} else {
 			select {
 			case task, ok := <-v.taskC:
 				if !ok {
@@ -138,8 +135,7 @@ LOOP:
 				select {
 				case v.workerC <- task:
 				default:
-					v.waitingC <- task
-					_ = atomic.AddUint32(&v.waitingTaskNum, 1)
+					v.waitingQ.AddLast(task)
 				}
 			case <-timer.C:
 				if v.WorkerNum() > 0 {
@@ -155,11 +151,7 @@ LOOP:
 
 func (v *Violin) clean() {
 	for v.WaitingTaskNum() > 0 {
-		task, ok := <-v.waitingC
-		if !ok {
-			break
-		}
-		_ = atomic.AddUint32(&v.waitingTaskNum, ^uint32(0))
+		task := v.waitingQ.DelFirst()
 		v.workerC <- task
 	}
 }
@@ -204,6 +196,5 @@ func (v *Violin) dismissAll() {
 
 func (v *Violin) waitClose() {
 	<-v.shutdownC
-	close(v.waitingC)
 	close(v.workerC)
 }

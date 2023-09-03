@@ -25,17 +25,14 @@ import (
 func TestOptions(t *testing.T) {
 	options := newOptions(
 		WithMaxWorkers(13),
-		WithWaitingQueueSize(7246),
 		WithWorkerIdleTimeout(time.Second*10),
 	)
 	assert.Equal(t, 13, options.maxWorkers)
-	assert.Equal(t, 7246, options.waitingQueueSize)
 	assert.Equal(t, time.Second*10, options.workerIdleTimeout)
 }
 
 func TestDefaultOptions(t *testing.T) {
 	options := newOptions()
 	assert.Equal(t, 5, options.maxWorkers)
-	assert.Equal(t, 64, options.waitingQueueSize)
 	assert.Equal(t, time.Second*3, options.workerIdleTimeout)
 }

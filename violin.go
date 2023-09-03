@@ -19,23 +19,25 @@ import (
 	"context"
 	"sync"
 	"sync/atomic"
+
+	"github.com/B1NARY-GR0UP/violin/ring"
 )
 
 // Violin VIOLIN worker pool
 type Violin struct {
 	options *options
 
-	mu   sync.Mutex
+	mu   sync.RWMutex
 	once sync.Once
 
-	workerNum      uint32
-	taskNum        uint32
-	waitingTaskNum uint32
-	status         uint32
+	workerNum uint32
+	taskNum   uint32
+	status    uint32
+
+	waitingQ *ring.Ring[func()]
 
 	workerC   chan func()
 	taskC     chan func()
-	waitingC  chan func()
 	dismissC  chan struct{}
 	pauseC    chan struct{}
 	shutdownC chan struct{}
@@ -54,9 +56,9 @@ func New(opts ...Option) *Violin {
 	options := newOptions(opts...)
 	v := &Violin{
 		options:   options,
+		waitingQ:  ring.New[func()](),
 		workerC:   make(chan func()),
 		taskC:     make(chan func()),
-		waitingC:  make(chan func(), options.waitingQueueSize),
 		dismissC:  make(chan struct{}),
 		pauseC:    make(chan struct{}),
 		shutdownC: make(chan struct{}),
@@ -123,19 +125,16 @@ func (v *Violin) MaxWorkerNum() int {
 	return v.options.maxWorkers
 }
 
-// WaitingQueueSize returns the size of the waiting queue
-func (v *Violin) WaitingQueueSize() int {
-	return v.options.waitingQueueSize
-}
-
 // TaskNum returns the number of tasks
 func (v *Violin) TaskNum() uint32 {
 	return atomic.LoadUint32(&v.taskNum)
 }
 
 // WaitingTaskNum returns the number of waiting tasks
-func (v *Violin) WaitingTaskNum() uint32 {
-	return atomic.LoadUint32(&v.waitingTaskNum)
+func (v *Violin) WaitingTaskNum() int {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.waitingQ.Size()
 }
 
 // WorkerNum returns the number of workers

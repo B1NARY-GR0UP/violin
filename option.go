@@ -21,20 +21,17 @@ type Option func(*options)
 
 type options struct {
 	maxWorkers        int
-	waitingQueueSize  int
 	workerIdleTimeout time.Duration
 }
 
 var defaultOptions = options{
 	maxWorkers:        5,
-	waitingQueueSize:  64,
 	workerIdleTimeout: 3 * time.Second,
 }
 
 func newOptions(opts ...Option) *options {
 	options := &options{
 		maxWorkers:        defaultOptions.maxWorkers,
-		waitingQueueSize:  defaultOptions.waitingQueueSize,
 		workerIdleTimeout: defaultOptions.workerIdleTimeout,
 	}
 	options.apply(opts...)
@@ -54,13 +51,6 @@ func WithMaxWorkers(max int) Option {
 	}
 	return func(o *options) {
 		o.maxWorkers = max
-	}
-}
-
-// WithWaitingQueueSize set the size of the waiting queue
-func WithWaitingQueueSize(size int) Option {
-	return func(o *options) {
-		o.waitingQueueSize = size
 	}
 }
 
