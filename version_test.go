@@ -23,5 +23,5 @@ import (
 
 func TestVersion(t *testing.T) {
 	assert.Equal(t, "VIOLIN", Name)
-	assert.Equal(t, "v0.3.0", Version)
+	assert.Equal(t, "v0.3.1", Version)
 }
