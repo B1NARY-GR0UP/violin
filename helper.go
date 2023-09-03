@@ -118,31 +118,31 @@ LOOP:
 			_ = atomic.AddUint32(&v.workerNum, 1)
 			go v.recruit(wg)
 		}
-		// consume the waiting queue first
-		if v.WaitingTaskNum() > 0 {
+		if v.waitingQ.Size() > 0 {
 			task := v.waitingQ.DelFirst()
+			select {
+			case v.workerC <- task:
+				continue
+			default:
+				v.waitingQ.AddLast(task)
+			}
+		}
+		select {
+		case task, ok := <-v.taskC:
+			if !ok {
+				break LOOP
+			}
 			select {
 			case v.workerC <- task:
 			default:
 				v.waitingQ.AddLast(task)
 			}
-		} else {
-			select {
-			case task, ok := <-v.taskC:
-				if !ok {
-					break LOOP
-				}
-				select {
-				case v.workerC <- task:
-				default:
-					v.waitingQ.AddLast(task)
-				}
-			case <-timer.C:
-				if v.WorkerNum() > 0 {
-					v.tryDismiss()
-				}
-				timer.Reset(v.options.workerIdleTimeout)
+		case <-timer.C:
+			if v.WorkerNum() > 0 {
+				v.tryDismiss()
 			}
+			timer.Reset(v.options.workerIdleTimeout)
+		default:
 		}
 	}
 	v.dismissAll()
@@ -150,7 +150,7 @@ LOOP:
 }
 
 func (v *Violin) clean() {
-	for v.WaitingTaskNum() > 0 {
+	for v.waitingQ.Size() > 0 {
 		task := v.waitingQ.DelFirst()
 		v.workerC <- task
 	}

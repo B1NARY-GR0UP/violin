@@ -57,17 +57,17 @@ func TestMaxWorkers(t *testing.T) {
 		t.Fatal("should have created one worker")
 	}
 
-	max := 13
-	v = New(WithMaxWorkers(max))
+	maximum := 13
+	v = New(WithMaxWorkers(maximum))
 	defer v.Shutdown()
 
-	assert.Equal(t, max, v.MaxWorkerNum())
+	assert.Equal(t, maximum, v.MaxWorkerNum())
 
-	started := make(chan struct{}, max)
+	started := make(chan struct{}, maximum)
 	release := make(chan struct{})
 
 	// Start workers, and have them all wait on a channel before completing.
-	for i := 0; i < max; i++ {
+	for i := 0; i < maximum; i++ {
 		v.Submit(func() {
 			started <- struct{}{}
 			<-release
@@ -75,10 +75,10 @@ func TestMaxWorkers(t *testing.T) {
 	}
 
 	// Wait for all queued tasks to be dispatched to workers.
-	assert.Equal(t, v.waitingQ.Size(), int(v.WaitingTaskNum()))
+	assert.Equal(t, v.waitingQ.Size(), v.WaitingTaskNum())
 
 	timeout := time.After(5 * time.Second)
-	for startCount := 0; startCount < max; {
+	for startCount := 0; startCount < maximum; {
 		select {
 		case <-started:
 			startCount++
@@ -127,18 +127,18 @@ func TestSubmitWait(t *testing.T) {
 func TestStopRace(t *testing.T) {
 	defer goleak.VerifyNone(t)
 
-	max := 13
+	maximum := 13
 
-	v := New(WithMaxWorkers(max))
+	v := New(WithMaxWorkers(maximum))
 	defer v.Shutdown()
 
 	workRelChan := make(chan struct{})
 
 	var started sync.WaitGroup
-	started.Add(max)
+	started.Add(maximum)
 
 	// Start workers, and have them all wait on a channel before completing.
-	for i := 0; i < max; i++ {
+	for i := 0; i < maximum; i++ {
 		v.Submit(func() {
 			started.Done()
 			<-workRelChan
