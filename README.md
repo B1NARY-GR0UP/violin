@@ -6,7 +6,7 @@
 
 ![VIOLIN](images/VIOLIN.png)
 
-VIOLIN worker pool / connection pool, rich APIs and configuration options are provided, inspired by [gammazero/workerpool](https://github.com/gammazero/workerpool) / [fatih/pool](https://github.com/fatih/pool).
+VIOLIN worker pool / connection pool, rich APIs and configuration options are provided.
 
 ## Install
 
@@ -73,7 +73,6 @@ func main() {
 | Option                  | Default           | Description                               |
 |-------------------------|-------------------|-------------------------------------------|
 | `WithMaxWorkers`        | `5`               | Set the maximum number of workers         |
-| `WithWaitingQueueSize`  | `64`              | Set the size of the waiting queue         |
 | `WithWorkerIdleTimeout` | `3 * time.Second` | Set the destroyed timeout of idle workers |
 
 ### Connection Pool
@@ -85,6 +84,13 @@ func main() {
 ## Blogs
 
 - [GO: How to Write a Worker Pool](https://dev.to/justlorain/go-how-to-write-a-worker-pool-1h3b) | [中文](https://juejin.cn/post/7244733519948333111)
+
+## Credits
+
+Sincere appreciation to the following repositories that made the development of VIOLIN possible.
+
+- [gammazero/workerpool](https://github.com/gammazero/workerpool)
+- [fatih/pool](https://github.com/fatih/pool)
 
 ## License
 
