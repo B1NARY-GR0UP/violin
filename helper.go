@@ -138,7 +138,7 @@ LOOP:
 				v.waitingQ.AddLast(task)
 			}
 		case <-timer.C:
-			if v.WorkerNum() > 0 {
+			if int(v.WorkerNum()) > v.MinWorkerNum() {
 				v.tryDismiss()
 			}
 			timer.Reset(v.options.workerIdleTimeout)

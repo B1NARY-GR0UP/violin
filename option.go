@@ -20,17 +20,20 @@ import "time"
 type Option func(*options)
 
 type options struct {
+	minWorkers        int
 	maxWorkers        int
 	workerIdleTimeout time.Duration
 }
 
 var defaultOptions = options{
+	minWorkers:        0,
 	maxWorkers:        5,
 	workerIdleTimeout: 3 * time.Second,
 }
 
 func newOptions(opts ...Option) *options {
 	options := &options{
+		minWorkers:        defaultOptions.minWorkers,
 		maxWorkers:        defaultOptions.maxWorkers,
 		workerIdleTimeout: defaultOptions.workerIdleTimeout,
 	}
@@ -41,6 +44,16 @@ func newOptions(opts ...Option) *options {
 func (o *options) apply(opts ...Option) {
 	for _, opt := range opts {
 		opt(o)
+	}
+}
+
+// WithMinWorkers set the minimum number of workers
+func WithMinWorkers(min int) Option {
+	if min < 0 {
+		min = 0
+	}
+	return func(o *options) {
+		o.minWorkers = min
 	}
 }
 

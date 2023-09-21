@@ -24,15 +24,18 @@ import (
 
 func TestOptions(t *testing.T) {
 	options := newOptions(
+		WithMinWorkers(5),
 		WithMaxWorkers(13),
 		WithWorkerIdleTimeout(time.Second*10),
 	)
+	assert.Equal(t, 5, options.minWorkers)
 	assert.Equal(t, 13, options.maxWorkers)
 	assert.Equal(t, time.Second*10, options.workerIdleTimeout)
 }
 
 func TestDefaultOptions(t *testing.T) {
 	options := newOptions()
+	assert.Equal(t, 0, options.minWorkers)
 	assert.Equal(t, 5, options.maxWorkers)
 	assert.Equal(t, time.Second*3, options.workerIdleTimeout)
 }

@@ -52,6 +52,7 @@ const (
 )
 
 // New VIOLIN worker pool
+// TODO: improve performance
 func New(opts ...Option) *Violin {
 	options := newOptions(opts...)
 	v := &Violin{
@@ -118,6 +119,11 @@ func (v *Violin) IsCleaning() bool {
 // IsShutdown returns true if the worker pool is shutdown
 func (v *Violin) IsShutdown() bool {
 	return atomic.LoadUint32(&v.status) == statusShutdown
+}
+
+// MinWorkerNum returns the minimum number of workers
+func (v *Violin) MinWorkerNum() int {
+	return v.options.minWorkers
 }
 
 // MaxWorkerNum returns the maximum number of workers

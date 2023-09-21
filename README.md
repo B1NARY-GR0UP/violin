@@ -72,6 +72,7 @@ func main() {
 
 | Option                  | Default           | Description                               |
 |-------------------------|-------------------|-------------------------------------------|
+| `WithMinWorkers`        | `0`               | Set the minimum number of workers         |
 | `WithMaxWorkers`        | `5`               | Set the maximum number of workers         |
 | `WithWorkerIdleTimeout` | `3 * time.Second` | Set the destroyed timeout of idle workers |
 
