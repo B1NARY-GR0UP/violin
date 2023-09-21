@@ -116,7 +116,7 @@ LOOP:
 	for {
 		if int(v.WorkerNum()) < v.MaxWorkerNum() {
 			_ = atomic.AddUint32(&v.workerNum, 1)
-			go v.recruit(wg)
+			go v.worker(wg)
 		}
 		if v.waitingQ.Size() > 0 {
 			task := v.waitingQ.DelFirst()
@@ -156,7 +156,7 @@ func (v *Violin) clean() {
 	}
 }
 
-func (v *Violin) recruit(wg *sync.WaitGroup) {
+func (v *Violin) worker(wg *sync.WaitGroup) {
 	wg.Add(1)
 	defer func() {
 		_ = atomic.AddUint32(&v.workerNum, ^uint32(0))
