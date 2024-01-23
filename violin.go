@@ -43,14 +43,6 @@ type Violin struct {
 	shutdownC chan struct{}
 }
 
-const (
-	_ uint32 = iota
-	statusInitialized
-	statusPlaying
-	statusCleaning
-	statusShutdown
-)
-
 // New VIOLIN worker pool
 // TODO: improve performance
 func New(opts ...Option) *Violin {
@@ -70,6 +62,7 @@ func New(opts ...Option) *Violin {
 }
 
 // Submit a task to the worker pool
+// TODO: error handling
 func (v *Violin) Submit(task func()) {
 	v.submit(false, task)
 }

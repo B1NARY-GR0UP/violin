@@ -27,8 +27,8 @@ type options struct {
 
 var defaultOptions = options{
 	minWorkers:        0,
-	maxWorkers:        5,
-	workerIdleTimeout: 3 * time.Second,
+	maxWorkers:        DefaultViolinMaxWorkerNum,
+	workerIdleTimeout: DefaultViolinWorkerIdleTimeout,
 }
 
 func newOptions(opts ...Option) *options {

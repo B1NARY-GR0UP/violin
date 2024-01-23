@@ -22,6 +22,8 @@ import (
 	"time"
 )
 
+// TODO: merge violin.go with helper.go
+
 func (v *Violin) submit(wait bool, task func()) {
 	if task == nil {
 		return
