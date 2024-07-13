@@ -1,12 +1,8 @@
-# VIOLIN
-
-[![Go Report Card](https://goreportcard.com/badge/github.com/B1NARY-GR0UP/violin)](https://goreportcard.com/report/github.com/B1NARY-GR0UP/violin)
-
-> Please ... listen.
-
 ![VIOLIN](images/VIOLIN.png)
 
 VIOLIN worker pool / connection pool, rich APIs and configuration options are provided.
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/B1NARY-GR0UP/violin)](https://goreportcard.com/report/github.com/B1NARY-GR0UP/violin)
 
 ## Install
 
